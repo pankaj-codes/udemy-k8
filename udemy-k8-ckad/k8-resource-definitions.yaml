@@ -1,0 +1,152 @@
+  # Namespace creation
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pankaj-dev
+  labels:
+    tier: dev
+
+---
+# Pod definition - with container
+
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: pankaj-ns
+  name: myapp-pod
+  labels:
+    app: my-apps
+    type: dev
+spec:
+  containers:
+    - image: nginx
+      labels:
+        tier: db-tier
+      env:
+        - name: POSTGRES_PASSWORD
+          value: password
+---
+
+# Pod definition
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app-pod2
+  labels:
+    tier: dev
+spec:
+  containers:
+    - image: nginx
+      name: nginx
+      labels:
+        tier: dev
+      env:
+        -  name: index
+           value: index.html
+
+---
+
+# Resource quota - Compute Quota
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-quota
+  namespace: pankaj-dev
+
+spec:
+  hard:
+    pods: "10"
+    requests.cpu: "4"
+    requests.memory: 5Gi
+    limits.cpu: "10"
+    limits.memory: 10Gi
+
+---
+
+# Replicaset-definition
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: my-rs
+  labels: 
+    app: myapp-rs
+spec:
+  template:
+    metadata:
+      namespace: pankaj-ns
+      name: myapp-pod
+      labels:
+        app: my-apps
+        type: dev
+    spec:
+      containers:
+        - image: nginx
+          labels:
+            tier: db-tier
+          env:
+            - name: POSTGRES_PASSWORD
+              value: password   
+  replicas: 3
+  selector:
+    matchLabels:
+      tier: db-tier       
+---
+
+# Deploy/Deployment Definition
+
+apiVersion: apss/v1
+kind: Deployment
+metadata:
+  name: deploy-1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: busybox-container
+  template:
+    metadata:
+      namespace: pankaj-ns
+      name: myapp-pod
+      labels:
+        app: my-apps
+        type: dev
+    spec:
+      containers:
+        - image: nginx
+          labels:
+            tier: db-tier
+          env:
+            - name: POSTGRES_PASSWORD
+              value: password   
+---
+# Service-definition/svc
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service-nodeport
+spec:
+  type: NodePort
+  ports:
+    - targetPort: 80
+      port: 80
+      nodePort: 3008 # 3000 to 32767 valid range of nordPort range
+  selector:
+    app: my-app    
+---
+# Service definition- ClusterIP
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service-clusterIP
+spec:
+  type: ClusterIP
+  ports:
+    - targetPort: 80
+      port: 80
+      

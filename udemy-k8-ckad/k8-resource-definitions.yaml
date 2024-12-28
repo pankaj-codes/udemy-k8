@@ -66,6 +66,28 @@ spec:
 
 ---
 
+## deployment-definition.yaml is similar to replicaset-definition just kind is different.
+
+# ReplicationController-definition
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: myapp-rc
+  labels:
+    type: fe
+spec:
+  template:
+    metadata:
+      name: my-app
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: nginx-container
+        image: nginx
+  replicas: 3
+---  
 # Replicaset-definition
 
 apiVersion: apps/v1
@@ -98,7 +120,7 @@ spec:
 
 # Deploy/Deployment Definition
 
-apiVersion: apss/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: deploy-1
